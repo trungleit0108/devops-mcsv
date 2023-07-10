@@ -1,4 +1,4 @@
-<include a CircleCI status badge, here>
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/trungleit0108/devops-mcsv/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/trungleit0108/devops-mcsv/tree/master)
 
 ## Project Overview
 
