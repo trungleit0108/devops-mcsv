@@ -61,6 +61,10 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: MySecurityGroup
@@ -69,7 +73,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       LaunchConfigurationName: kubernetes-launch-config
-      ImageId: ami-04823729c75214919  # Specify an appropriate Amazon Linux 2 AMI ID
+      ImageId: ami-04823729c75214919 # Ubuntu 20
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
       SecurityGroups:
@@ -106,7 +110,12 @@ Resources:
     Properties:
       Name: !Ref ClusterName
       RoleArn: !GetAtt EKSServiceRole.Arn
-      Version: 1.21  # Specify the desired Kubernetes version
+      Version: 1.21 # Specify the desired Kubernetes version
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref MySubnet
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
@@ -116,7 +125,7 @@ Resources:
       Subnets:
         - !Ref MySubnet
       InstanceTypes:
-        - t2.micro  # Specify the desired instance types
+        - t2.micro # Specify the desired instance types
       ScalingConfig:
         DesiredSize: 1
         MinSize: 1
