@@ -59,12 +59,16 @@ jobs:
 
       - run:
           # --capabilities CAPABILITY_IAM \
+          # --parameters .circleci/files/parameter.json
           name: deploy EKS cluster
           command: |
-            aws cloudformation create-stack --stack-name my-eks-cluster \
-              --template-body .circleci/files/kubernetes-cluster.yaml \
+            aws cloudformation deploy --stack-name my-eks-cluster \
+              --template-file .circleci/files/kubernetes-cluster.yaml \
               --tags project=capstone \
-              --parameters .circleci/files/parameter.json
+              --parameter-overrides \
+                ClusterName=my-eks-cluster \
+                AvailabilityZone=us-east-1a \
+                KeyPairName=cluster_key_pair
 
       - run:
           name: check running pods
