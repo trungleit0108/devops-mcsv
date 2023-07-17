@@ -44,6 +44,13 @@ jobs:
             make lint
 
       - run:
+          name: Install AWS CLI
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
+      - run:
           name: deploy EKS cluster
           command: |
             aws cloudformation create-stack --stack-name my-eks-cluster \
@@ -69,4 +76,3 @@ jobs:
       #     command: |
       #       EXTERNAL_IP=$(kubectl get service <service-name> -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
       #       echo "Service External IP: $EXTERNAL_IP"
-
