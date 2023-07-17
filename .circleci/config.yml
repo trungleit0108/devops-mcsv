@@ -51,6 +51,13 @@ jobs:
             ./aws/install
 
       - run:
+          name: Configure AWS CLI
+          command: |
+            aws configure set aws_access_key_id <<AWS_ACCESS_KEY_ID>>
+            aws configure set aws_secret_access_key <<AWS_SECRET_ACCESS_KEY>>
+            aws configure set region <<AWS_DEFAULT_REGION>>
+
+      - run:
           name: deploy EKS cluster
           command: |
             aws cloudformation create-stack --stack-name my-eks-cluster \
