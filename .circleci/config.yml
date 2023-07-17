@@ -42,3 +42,31 @@ jobs:
           command: |
             . venv/bin/activate
             make lint
+
+      - run:
+          name: deploy EKS cluster
+          command: |
+            aws cloudformation create-stack --stack-name my-eks-cluster \
+              --template-body .circleci/files/kubernetes-cluster.yaml \
+              --capabilities CAPABILITY_IAM \
+              --parameters \
+                ParameterKey=ClusterName,ParameterValue=my-eks-cluster \
+                ParameterKey=AvailabilityZone,ParameterValue=us-east-1a \
+                ParameterKey=KeyPairName,ParameterValue=cluster_key_pair
+
+      - run:
+          name: check running pods
+          command: |
+            kubectl get pods
+
+      - run:
+          name: get service name in cluster
+          command: |
+            kubectl get services
+
+      # - run:
+      #     name: get service external IP
+      #     command: |
+      #       EXTERNAL_IP=$(kubectl get service <service-name> -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+      #       echo "Service External IP: $EXTERNAL_IP"
+
