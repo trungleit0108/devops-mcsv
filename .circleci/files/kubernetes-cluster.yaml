@@ -120,7 +120,7 @@ Resources:
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
-      ClusterName: !Ref ClusterName
+      ClusterName: !Ref EKSCluster
       NodegroupName: eks-nodegroup
       Subnets:
         - !Ref MySubnet
