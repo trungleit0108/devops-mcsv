@@ -61,8 +61,8 @@ jobs:
           # --capabilities CAPABILITY_IAM \
           name: deploy EKS cluster
           command: |
-            aws cloudformation deploy --stack-name my-eks-cluster \
-              --template-file .circleci/files/kubernetes-cluster.yaml \
+            aws cloudformation create-stack --stack-name my-eks-cluster \
+              --template-body .circleci/files/kubernetes-cluster.yaml \
               --tags project=capstone \
               --parameters .circleci/files/parameter.json
 
