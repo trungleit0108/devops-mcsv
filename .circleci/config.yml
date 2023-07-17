@@ -58,13 +58,13 @@ jobs:
             aws configure set region $AWS_DEFAULT_REGION
 
       - run:
-          # --capabilities CAPABILITY_IAM \
           # --parameters .circleci/files/parameter.json
           name: deploy EKS cluster
           command: |
             aws cloudformation deploy --stack-name my-eks-cluster \
               --template-file .circleci/files/kubernetes-cluster.yaml \
               --tags project=capstone \
+              --capabilities CAPABILITY_IAM \
               --parameter-overrides \
                 ClusterName=my-eks-cluster \
                 AvailabilityZone=us-east-1a \
