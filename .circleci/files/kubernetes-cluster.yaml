@@ -165,7 +165,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       LaunchConfigurationName: kubernetes-launch-config
-      ImageId: ami-04823729c75214919 # Ubuntu 20
+      ImageId: ami-0bef6cc322bfff646 
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
       SecurityGroups:
