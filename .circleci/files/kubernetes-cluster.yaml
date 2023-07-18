@@ -241,6 +241,7 @@ Resources:
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: MyInternetGateway
     Properties:
       Name: my-load-balancer
       Subnets:
