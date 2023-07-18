@@ -15,7 +15,7 @@ Parameters:
     Description: EC2 Key Pair Name for SSH access
 
 Resources:
-  MyVPC:
+  MainVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
@@ -23,7 +23,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: MyVPC
+          Value: MainVPC
 
   MyInternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -35,13 +35,13 @@ Resources:
   MyVPCInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       InternetGatewayId: !Ref MyInternetGateway
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       CidrBlock: 10.0.1.0/24
       AvailabilityZone: !Ref AvailabilityZone1
       MapPublicIpOnLaunch: true
@@ -52,7 +52,7 @@ Resources:
   PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       CidrBlock: 10.0.2.0/24
       AvailabilityZone: !Ref AvailabilityZone2
       MapPublicIpOnLaunch: false
@@ -63,7 +63,6 @@ Resources:
   ElasticIp:
     Type: AWS::EC2::EIP
 
-    
   PublicNATGateway:
     Type: AWS::EC2::NatGateway
     Properties:
@@ -74,12 +73,12 @@ Resources:
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
 
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
 
   PublicRoute:
     DependsOn: MyInternetGateway
@@ -148,7 +147,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for the cluster
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -190,7 +189,7 @@ Resources:
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: kubernetes-asg
+      # AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
       MinSize: "1"
       MaxSize: "3"
@@ -233,7 +232,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Load balancer security group
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -267,7 +266,7 @@ Resources:
       Name: my-target-group
       Port: 80
       Protocol: HTTP
-      VpcId: !Ref MyVPC
+      VpcId: !Ref MainVPC
       TargetType: instance
       Targets:
         - Id: !Ref AutoScalingGroup
