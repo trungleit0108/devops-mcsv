@@ -15,6 +15,13 @@ Parameters:
     Description: EC2 Key Pair Name for SSH access
 
 Resources:
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MyInternetGateway
+
   MyVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -24,6 +31,12 @@ Resources:
       Tags:
         - Key: Name
           Value: MyVPC
+
+  MyVPCInternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref MyInternetGateway
 
   MySubnet1:
     Type: AWS::EC2::Subnet
@@ -44,6 +57,31 @@ Resources:
       Tags:
         - Key: Name
           Value: MySubnet2
+
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+
+  MyRoute:
+    Type: AWS::EC2::Route
+    DependsOn: MyVPCInternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref MyRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+
+  MySubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref MySubnet1
+      RouteTableId: !Ref MyRouteTable
+
+  MySubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref MySubnet2
+      RouteTableId: !Ref MyRouteTable
 
   EKSServiceRole:
     Type: AWS::IAM::Role
