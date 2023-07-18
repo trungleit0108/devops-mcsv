@@ -40,7 +40,7 @@ Resources:
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Ref AvailabilityZone1
+      AvailabilityZone: !Ref AvailabilityZone2
       Tags:
         - Key: Name
           Value: MySubnet2
