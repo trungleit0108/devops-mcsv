@@ -110,7 +110,7 @@ Resources:
     Properties:
       Name: !Ref ClusterName
       RoleArn: !GetAtt EKSServiceRole.Arn
-      Version: 1.21 # Specify the desired Kubernetes version
+      # Version: 1.21 # Specify the desired Kubernetes version
       ResourcesVpcConfig:
         SecurityGroupIds:
           - !Ref SecurityGroup
