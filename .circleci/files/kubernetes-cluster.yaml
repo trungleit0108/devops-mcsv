@@ -15,13 +15,6 @@ Parameters:
     Description: EC2 Key Pair Name for SSH access
 
 Resources:
-  MyInternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: MyInternetGateway
-
   MyVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -32,56 +25,89 @@ Resources:
         - Key: Name
           Value: MyVPC
 
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MyInternetGateway
+
   MyVPCInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref MyVPC
       InternetGatewayId: !Ref MyInternetGateway
 
-  MySubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref MyVPC
-      CidrBlock: 10.0.0.0/24
-      AvailabilityZone: !Ref AvailabilityZone1
-      Tags:
-        - Key: Name
-          Value: MySubnet1
-
-  MySubnet2:
+  PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Ref AvailabilityZone2
+      AvailabilityZone: !Ref AvailabilityZone1
+      MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: MySubnet2
+          Value: PublicSubnet
 
-  MyRouteTable:
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Ref AvailabilityZone2
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet
+
+  ElasticIp:
+    Type: AWS::EC2::EIP
+
+    
+  PublicNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      # AllocationId: !Ref ElasticIp
+      AllocationId: !GetAtt ElasticIp.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref MyVPC
 
-  MyRoute:
-    Type: AWS::EC2::Route
-    DependsOn: MyVPCInternetGatewayAttachment
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
     Properties:
-      RouteTableId: !Ref MyRouteTable
+      VpcId: !Ref MyVPC
+
+  PublicRoute:
+    DependsOn: MyInternetGateway
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref MyInternetGateway
 
-  MySubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
+  PrivateRoute:
+    DependsOn: PublicNATGateway
+    Type: AWS::EC2::Route
     Properties:
-      SubnetId: !Ref MySubnet1
-      RouteTableId: !Ref MyRouteTable
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref PublicNATGateway
 
-  MySubnet2RouteTableAssociation:
+  PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref MySubnet2
-      RouteTableId: !Ref MyRouteTable
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
 
   EKSServiceRole:
     Type: AWS::IAM::Role
@@ -170,8 +196,8 @@ Resources:
       MaxSize: "3"
       DesiredCapacity: "1"
       VPCZoneIdentifier:
-        - !Ref MySubnet1
-        - !Ref MySubnet2
+        - !Ref PublicSubnet
+        - !Ref PrivateSubnet
 
   EKSCluster:
     Type: AWS::EKS::Cluster
@@ -183,8 +209,8 @@ Resources:
         SecurityGroupIds:
           - !Ref SecurityGroup
         SubnetIds:
-          - !Ref MySubnet1
-          - !Ref MySubnet2
+          - !Ref PublicSubnet
+          - !Ref PrivateSubnet
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
@@ -193,8 +219,8 @@ Resources:
       ClusterName: !Ref EKSCluster
       NodegroupName: eks-nodegroup
       Subnets:
-        - !Ref MySubnet1
-        - !Ref MySubnet2
+        - !Ref PublicSubnet
+        - !Ref PrivateSubnet
       InstanceTypes:
         - t2.micro # Specify the desired instance types
       ScalingConfig:
@@ -219,8 +245,8 @@ Resources:
     Properties:
       Name: my-load-balancer
       Subnets:
-        - !Ref MySubnet1
-        - !Ref MySubnet2
+        - !Ref PublicSubnet
+        - !Ref PrivateSubnet
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Type: application
