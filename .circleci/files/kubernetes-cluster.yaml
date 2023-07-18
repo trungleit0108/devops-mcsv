@@ -4,9 +4,12 @@ Parameters:
   ClusterName:
     Type: String
     Description: Name for the EKS cluster
-  AvailabilityZone:
+  AvailabilityZone1:
     Type: AWS::EC2::AvailabilityZone::Name
-    Description: Availability Zone for the subnet
+    Description: Availability Zone for the first subnet
+  AvailabilityZone2:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: Availability Zone for the second subnet
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: EC2 Key Pair Name for SSH access
@@ -22,15 +25,25 @@ Resources:
         - Key: Name
           Value: MyVPC
 
-  MySubnet:
+  MySubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: 10.0.0.0/24
-      AvailabilityZone: !Ref AvailabilityZone
+      AvailabilityZone: !Ref AvailabilityZone1
       Tags:
         - Key: Name
-          Value: MySubnet
+          Value: MySubnet1
+
+  MySubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.0.1/24
+      AvailabilityZone: !Ref AvailabilityZone1
+      Tags:
+        - Key: Name
+          Value: MySubnet2
 
   EKSServiceRole:
     Type: AWS::IAM::Role
@@ -119,7 +132,8 @@ Resources:
       MaxSize: "3"
       DesiredCapacity: "1"
       VPCZoneIdentifier:
-        - !Ref MySubnet
+        - !Ref MySubnet1
+        - !Ref MySubnet2
 
   EKSCluster:
     Type: AWS::EKS::Cluster
@@ -131,7 +145,8 @@ Resources:
         SecurityGroupIds:
           - !Ref SecurityGroup
         SubnetIds:
-          - !Ref MySubnet
+          - !Ref MySubnet1
+          - !Ref MySubnet2
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
@@ -140,7 +155,8 @@ Resources:
       ClusterName: !Ref EKSCluster
       NodegroupName: eks-nodegroup
       Subnets:
-        - !Ref MySubnet
+        - !Ref MySubnet1
+        - !Ref MySubnet2
       InstanceTypes:
         - t2.micro # Specify the desired instance types
       ScalingConfig:
@@ -165,7 +181,8 @@ Resources:
     Properties:
       Name: my-load-balancer
       Subnets:
-        - !Ref MySubnet
+        - !Ref MySubnet1
+        - !Ref MySubnet2
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Type: application

@@ -67,7 +67,8 @@ jobs:
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides \
                 ClusterName=my-eks-cluster \
-                AvailabilityZone=us-east-1a \
+                AvailabilityZone1=us-east-1a \
+                AvailabilityZone2=us-east-1b \
                 KeyPairName=cluster_key_pair
 
       - run:
