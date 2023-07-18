@@ -46,6 +46,22 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
+  myEKSWorkerNodeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: eks-service-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+
   ECRRepository:
     Type: AWS::ECR::Repository
     Properties:
@@ -99,9 +115,9 @@ Resources:
     Properties:
       AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
-      MinSize: 1
-      MaxSize: 3
-      DesiredCapacity: 1
+      MinSize: "1"
+      MaxSize: "3"
+      DesiredCapacity: "1"
       VPCZoneIdentifier:
         - !Ref MySubnet
 
@@ -110,7 +126,7 @@ Resources:
     Properties:
       Name: !Ref ClusterName
       RoleArn: !GetAtt EKSServiceRole.Arn
-      # Version: 1.21 # Specify the desired Kubernetes version
+      Version: "1.26" # Specify the desired Kubernetes version
       ResourcesVpcConfig:
         SecurityGroupIds:
           - !Ref SecurityGroup
