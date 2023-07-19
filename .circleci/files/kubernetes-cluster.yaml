@@ -25,18 +25,18 @@ Resources:
         - Key: Name
           Value: MainVPC
 
-  MyInternetGateway:
+  InternetGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: MyInternetGateway
+          Value: InternetGW
 
   MyVPCInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref MainVPC
-      InternetGatewayId: !Ref MyInternetGateway
+      InternetGatewayId: !Ref InternetGW
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -81,12 +81,12 @@ Resources:
       VpcId: !Ref MainVPC
 
   PublicRoute:
-    DependsOn: MyInternetGateway
+    DependsOn: InternetGW
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref MyInternetGateway
+      GatewayId: !Ref InternetGW
 
   PrivateRoute:
     DependsOn: PublicNATGateway
@@ -188,11 +188,12 @@ Resources:
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: MyVPCInternetGatewayAttachment
     Properties:
       # AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
       MinSize: "1"
-      MaxSize: "3"
+      MaxSize: "2"
       DesiredCapacity: "1"
       VPCZoneIdentifier:
         - !Ref PublicSubnet
@@ -241,7 +242,7 @@ Resources:
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    DependsOn: MyInternetGateway
+    DependsOn: InternetGW
     Properties:
       Name: my-load-balancer
       Subnets:
