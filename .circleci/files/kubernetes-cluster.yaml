@@ -174,6 +174,10 @@ Resources:
           FromPort: 8080
           ToPort: 8080
           CidrIp: 0.0.0.0/0
+        # - IpProtocol: tcp
+        #   FromPort: 80
+        #   ToPort: 8080
+        #   CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -181,32 +185,6 @@ Resources:
       Tags:
         - Key: Name
           Value: SecurityGroupCluster
-
-  # LaunchConfiguration:
-  #   Type: AWS::AutoScaling::LaunchConfiguration
-  #   DependsOn: SecurityGroupCluster
-  #   Properties:
-  #     LaunchConfigurationName: kubernetes-launch-config
-  #     ImageId: ami-0261755bbcb8c4a84
-  #     InstanceType: t2.micro
-  #     KeyName: !Ref KeyPairName
-  #     SecurityGroups:
-  #       - !Ref SecurityGroupCluster
-  #     UserData:
-  #       Fn::Base64: |
-  #         #!/bin/bash
-  #         echo "Starting user data script"
-  #         echo "Installing Docker..."
-  #         yum install -y docker
-
-  #         echo "Starting Docker service..."
-  #         service docker start
-
-  #         echo "Building and running Docker container..."
-  #         docker build --tag=image_demo .
-
-  #         echo "Running Docker container..."
-  #         docker run -d -p 8000:80 image_demo
 
   UbuntuInstance1:
     Type: AWS::EC2::Instance
