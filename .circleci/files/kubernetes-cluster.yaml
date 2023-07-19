@@ -197,7 +197,9 @@ Resources:
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
-    DependsOn: MyVPCInternetGatewayAttachment
+    DependsOn: 
+      - MyVPCInternetGatewayAttachment
+      - LaunchConfiguration
     Properties:
       AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
