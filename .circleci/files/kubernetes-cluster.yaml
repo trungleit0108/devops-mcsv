@@ -204,6 +204,19 @@ Resources:
   #         echo "Running Docker container..."
   #         docker run -d -p 8000:80 image_demo
 
+  UbuntuInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyPairName
+      ImageId: ami-0261755bbcb8c4a84
+      SubnetId: !Ref PublicSubnet
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !Ref SecurityGroupCluster
+      Tags:
+        - Key: Name
+          Value: UbuntuInstanceWithUserdata1
+
   LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -240,7 +253,8 @@ Resources:
     Properties:
       AutoScalingGroupName: kubernetes-asg
       LaunchTemplate:
-        LaunchTemplateName: !Ref LaunchTemplate
+        # LaunchTemplateName: !Ref LaunchTemplate
+        LaunchTemplateName: kubernetes-launch-template
         Version: !GetAtt LaunchTemplate.LatestVersionNumber
       MinSize: "1"
       MaxSize: "2"
@@ -318,6 +332,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     DependsOn:
       - AutoScalingGroup
+      - UbuntuInstance1
     Properties:
       Name: my-target-group
       Port: 80
@@ -325,7 +340,9 @@ Resources:
       VpcId: !Ref MainVPC
       TargetType: instance
       Targets:
-        - Id: !Ref AutoScalingGroup
+        # - Id: !Ref AutoScalingGroup
+        #   Port: 8000
+        - Id: !Ref UbuntuInstance1
           Port: 8000
 
   LoadBalancerListener:
