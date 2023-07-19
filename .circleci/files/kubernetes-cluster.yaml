@@ -118,7 +118,7 @@ Resources:
   EKSServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: eks-service-role
+      # RoleName: eks-service-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -134,7 +134,7 @@ Resources:
   myEKSWorkerNodeRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: my-eks-worker-node-role
+      # RoleName: my-eks-worker-node-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
