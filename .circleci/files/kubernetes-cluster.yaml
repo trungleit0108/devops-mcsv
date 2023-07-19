@@ -165,7 +165,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       LaunchConfigurationName: kubernetes-launch-config
-      ImageId: ami-0bef6cc322bfff646 
+      ImageId: ami-0261755bbcb8c4a84
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
       SecurityGroups:
@@ -252,16 +252,6 @@ Resources:
         - !Ref LoadBalancerSecurityGroup
       Type: application
 
-  LoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref LoadBalancer
-      Protocol: HTTP
-      Port: 80
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref TargetGroup
-
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -273,6 +263,16 @@ Resources:
       Targets:
         - Id: !Ref AutoScalingGroup
           Port: 8000
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
 
 Outputs:
   ClusterNameOutput:
