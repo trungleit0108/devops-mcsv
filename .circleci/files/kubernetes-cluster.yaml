@@ -131,21 +131,21 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
-  # myEKSWorkerNodeRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     RoleName: my-eks-worker-node-role
-  #     AssumeRolePolicyDocument:
-  #       Version: "2012-10-17"
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service: eks.amazonaws.com
-  #           Action: sts:AssumeRole
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-  #       - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-  #       - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+  myEKSWorkerNodeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: my-eks-worker-node-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
 
   ECRRepository:
     Type: AWS::ECR::Repository
@@ -301,7 +301,7 @@ Resources:
         DesiredSize: 1
         MinSize: 1
         MaxSize: 2
-      NodeRole: !GetAtt EKSServiceRole.Arn
+      NodeRole: !GetAtt myEKSWorkerNodeRole.Arn
 
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
