@@ -34,6 +34,9 @@ Resources:
 
   MyVPCInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: 
+      - MainVPC
+      - InternetGW
     Properties:
       VpcId: !Ref MainVPC
       InternetGatewayId: !Ref InternetGW
