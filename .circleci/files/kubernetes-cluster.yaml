@@ -81,7 +81,9 @@ Resources:
       VpcId: !Ref MainVPC
 
   PublicRoute:
-    DependsOn: InternetGW
+    DependsOn:
+      - InternetGW
+      - PublicRouteTable
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicRouteTable
@@ -89,7 +91,9 @@ Resources:
       GatewayId: !Ref InternetGW
 
   PrivateRoute:
-    DependsOn: PublicNATGateway
+    DependsOn:
+      - PublicNATGateway
+      - PrivateRouteTable
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PrivateRouteTable
@@ -145,6 +149,8 @@ Resources:
 
   SecurityGroupCluster:
     Type: AWS::EC2::SecurityGroup
+    DependsOn:
+      - MainVPC
     Properties:
       GroupDescription: Security group for the cluster
       VpcId: !Ref MainVPC
@@ -197,9 +203,11 @@ Resources:
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
-    DependsOn: 
+    DependsOn:
       - MyVPCInternetGatewayAttachment
       - LaunchConfiguration
+      - PublicSubnet
+      - PrivateSubnet
     Properties:
       AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
@@ -212,7 +220,10 @@ Resources:
 
   EKSCluster:
     Type: AWS::EKS::Cluster
-    DependsOn: SecurityGroupCluster
+    DependsOn:
+      - SecurityGroupCluster
+      - PublicSubnet
+      - PrivateSubnet
     Properties:
       Name: !Ref ClusterName
       RoleArn: !GetAtt EKSServiceRole.Arn
@@ -226,7 +237,11 @@ Resources:
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
-    DependsOn: EKSCluster
+    DependsOn:
+      - EKSCluster
+      - PublicSubnet
+      - PrivateSubnet
+      - EKSServiceRole
     Properties:
       ClusterName: !Ref EKSCluster
       NodegroupName: eks-nodegroup
@@ -238,11 +253,13 @@ Resources:
       ScalingConfig:
         DesiredSize: 1
         MinSize: 1
-        MaxSize: 3
+        MaxSize: 2
       NodeRole: !GetAtt EKSServiceRole.Arn
 
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
+    DependsOn:
+      - SecurityGroupCluster
     Properties:
       GroupDescription: Load balancer security group
       VpcId: !Ref MainVPC
@@ -254,19 +271,21 @@ Resources:
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    DependsOn: InternetGW
+    DependsOn:
+      - LoadBalancerSecurityGroup
     Properties:
       Name: my-load-balancer
       Subnets:
         - !Ref PublicSubnet
-        - !Ref PrivateSubnet
+        # - !Ref PrivateSubnet
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Type: application
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    DependsOn: AutoScalingGroup
+    DependsOn:
+      - AutoScalingGroup
     Properties:
       Name: my-target-group
       Port: 80
@@ -279,6 +298,9 @@ Resources:
 
   LoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - LoadBalancer
+      - TargetGroup
     Properties:
       LoadBalancerArn: !Ref LoadBalancer
       Protocol: HTTP
