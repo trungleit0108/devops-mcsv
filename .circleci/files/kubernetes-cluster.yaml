@@ -277,7 +277,7 @@ Resources:
       Name: my-load-balancer
       Subnets:
         - !Ref PublicSubnet
-        # - !Ref PrivateSubnet
+        - !Ref PrivateSubnet
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Type: application
