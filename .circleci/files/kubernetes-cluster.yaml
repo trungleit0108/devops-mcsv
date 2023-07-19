@@ -236,47 +236,45 @@ Resources:
           echo "Running Docker container..."
           docker run -d -p 8000:80 image_demo
 
-  # LaunchTemplate:
-  #   Type: AWS::EC2::LaunchTemplate
-  #   Properties:
-  #     LaunchTemplateName: kubernetes-launch-template
-  #     LaunchTemplateData:
-  #       ImageId: ami-0261755bbcb8c4a84
-  #       InstanceType: t2.micro
-  #       KeyName: !Ref KeyPairName
-  #       SecurityGroupIds:
-  #         - !Ref SecurityGroupCluster
-  #       UserData:
-  #         Fn::Base64: !Sub |
-  #           #!/bin/bash
-  #           echo "Starting user data script"
-  #           echo "Installing Docker..."
-  #           yum install -y docker
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: kubernetes-launch-template
+      LaunchTemplateData:
+        ImageId: ami-0261755bbcb8c4a84
+        InstanceType: t2.micro
+        KeyName: !Ref KeyPairName
+        SecurityGroupIds:
+          - !Ref SecurityGroupCluster
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            echo "Starting user data script"
+            echo "Installing Docker..."
+            yum install -y docker
 
-  #           echo "Starting Docker service..."
-  #           service docker start
+            echo "Starting Docker service..."
+            service docker start
 
-  #           echo "Building and running Docker container..."
-  #           docker build --tag=image_demo .
+            echo "Building and running Docker container..."
+            docker build --tag=image_demo .
 
-  #           echo "Running Docker container..."
-  #           docker run -d -p 8000:80 image_demo
+            echo "Running Docker container..."
+            docker run -d -p 8000:80 image_demo
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn:
       - MyVPCInternetGatewayAttachment
-      # - LaunchTemplate
-      - UbuntuInstance1
+      - LaunchTemplate
       - PublicSubnet
       - PrivateSubnet
     Properties:
       AutoScalingGroupName: kubernetes-asg
-      InstanceId: !Ref UbuntuInstance1
-      # LaunchTemplate:
-      #   # LaunchTemplateName: !Ref LaunchTemplate
-      #   LaunchTemplateName: kubernetes-launch-template
-      #   Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      # InstanceId: !Ref UbuntuInstance1
+      LaunchTemplate:
+        LaunchTemplateName: kubernetes-launch-template
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
       MinSize: "1"
       MaxSize: "2"
       DesiredCapacity: "1"
