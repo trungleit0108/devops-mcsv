@@ -143,7 +143,7 @@ Resources:
     Properties:
       RepositoryName: image_demo
 
-  SecurityGroup:
+  SecurityGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for the cluster
@@ -154,22 +154,31 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: MySecurityGroup
+          Value: SecurityGroupCluster
 
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
+    DependsOn: SecurityGroupCluster
     Properties:
       LaunchConfigurationName: kubernetes-launch-config
       ImageId: ami-0261755bbcb8c4a84
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
       SecurityGroups:
-        - !Ref SecurityGroup
+        - !Ref SecurityGroupCluster
       UserData:
         Fn::Base64: |
           #!/bin/bash
@@ -190,7 +199,7 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: MyVPCInternetGatewayAttachment
     Properties:
-      # AutoScalingGroupName: kubernetes-asg
+      AutoScalingGroupName: kubernetes-asg
       LaunchConfigurationName: !Ref LaunchConfiguration
       MinSize: "1"
       MaxSize: "2"
@@ -201,13 +210,14 @@ Resources:
 
   EKSCluster:
     Type: AWS::EKS::Cluster
+    DependsOn: SecurityGroupCluster
     Properties:
       Name: !Ref ClusterName
       RoleArn: !GetAtt EKSServiceRole.Arn
-      Version: "1.26" # Specify the desired Kubernetes version
+      Version: "1.27" # Specify the desired Kubernetes version
       ResourcesVpcConfig:
         SecurityGroupIds:
-          - !Ref SecurityGroup
+          - !Ref SecurityGroupCluster
         SubnetIds:
           - !Ref PublicSubnet
           - !Ref PrivateSubnet
@@ -238,7 +248,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref SecurityGroup
+          SourceSecurityGroupId: !Ref SecurityGroupCluster
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
