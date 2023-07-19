@@ -239,7 +239,9 @@ Resources:
       - PrivateSubnet
     Properties:
       AutoScalingGroupName: kubernetes-asg
-      LaunchConfigurationName: !Ref LaunchTemplate
+      LaunchTemplate:
+        LaunchTemplateName: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
       MinSize: "1"
       MaxSize: "2"
       DesiredCapacity: "1"
