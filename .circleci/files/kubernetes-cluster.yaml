@@ -302,6 +302,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn:
       - LoadBalancerSecurityGroup
+      - MyVPCInternetGatewayAttachment
     Properties:
       Name: my-load-balancer
       Subnets:
@@ -342,6 +343,9 @@ Outputs:
   ClusterNameOutput:
     Value: !Ref ClusterName
     Description: EKS cluster name
+  AutoScalingGroup:
+    Value: !Ref AutoScalingGroup
+    Description: Auto scalling group Id
   LoadBalancerDNSName:
     Value: !GetAtt LoadBalancer.DNSName
     Description: DNS name of the load balancer
