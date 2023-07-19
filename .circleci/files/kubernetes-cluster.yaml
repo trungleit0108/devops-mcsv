@@ -264,6 +264,7 @@ Resources:
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: AutoScalingGroup
     Properties:
       Name: my-target-group
       Port: 80
