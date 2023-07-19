@@ -346,8 +346,8 @@ Resources:
       Targets:
         # - Id: !Ref AutoScalingGroup
         #   Port: 8000
-        # - Id: !Ref UbuntuInstance1
-        - Id: !GetAtt AutoScalingGroup.Instances
+        - Id: !Ref UbuntuInstance1
+        # - Id: !GetAtt AutoScalingGroup.Instances
           Port: 8000
 
   LoadBalancerListener:
